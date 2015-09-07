@@ -31,6 +31,22 @@ Try using Weave.
 
 Prove to yourself that the container __ex1__ can see the container __ex2__, and vice-versa by doing a ping. For example, in __ex1__, ```ping -c 2 ex2```, and in __ex2__, ```ping -c 2 ex1```.
 
+#Try this too
+Try creating an elasticsearch cluster.
+
+```
+docker pull elasticsearch:1.5.2
+docker run -d --name=es1 -p 9200:9200 -p 9300:9300 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+docker exec es1 plugin -i elasticsearch/marvel/latest
+docker restart es1
+docker run -d --name=es2 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+docker run -d --name=es3 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+```
+
+1. [Check the cluster health](http://10.211.55.125:9200/_cluster/health?pretty=true)
+2. [View stats via Marvel](http://10.211.55.125:9200/_plugin/marvel)
+
+
 #Copyright Stuff
 Copyright 2015 Jee Vang
 
