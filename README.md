@@ -46,6 +46,88 @@ docker run -d --name=es3 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=tes
 1. [Check the cluster health](http://10.211.55.125:9200/_cluster/health?pretty=true)
 2. [View stats via Marvel](http://10.211.55.125:9200/_plugin/marvel)
 
+#Finally, try this
+Try creating an elasticsearch cluster with mounted points to persist data. First, create the locations where we will persist data.
+
+```
+mkdir /home/vagrant/es1
+mkdir /home/vagrant/es2
+mkdir /home/vagrant/es3
+````
+
+Second, bring up the elasticsearch nodes with the mounted data points.
+
+```
+docker run -d -v /home/vagrant/es1:/usr/share/elasticsearch/data --name=es1 -p 9200:9200 -p 9300:9300 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+docker exec es1 plugin -i elasticsearch/marvel/latest
+docker restart es1
+docker run -d -v /home/vagrant/es2:/usr/share/elasticsearch/data --name=es2 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+docker run -d -v /home/vagrant/es3:/usr/share/elasticsearch/data --name=es3 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+```
+
+Third, add some data. Assuming you've ssh'd into the VM.
+
+```
+curl -XPUT 'http://localhost:9200/app' -d '
+{
+ "mappings" : {
+  "customer" : {
+   "properties" : {
+    "fname" : {"type": "string", "index" : "not_analyzed" },
+    "lname" : {"type": "string", "index" : "not_analyzed" }
+   }
+  }
+ }
+}'
+
+
+curl -XPUT 'http://localhost:9200/app/customer/1' -d '
+{
+    "fname" : "john",
+	"lname" : "doe"
+}'
+
+curl -XPUT 'http://localhost:9200/app/customer/2' -d '
+{
+    "fname" : "jane",
+	"lname" : "smith"
+}'
+
+curl 'http://localhost:9200/app/customer/_search?pretty=true' -d '
+{
+	"query": {
+		"match_all": { }
+	}
+}'
+```
+
+Fourth, destroy the docker containers.
+
+```
+docker stop es1 es2 es3
+docker rm es1 es2 es3
+```
+
+Fifth, bring the docker containers back on (exactly as in the second step).
+
+```
+docker run -d -v /home/vagrant/es1:/usr/share/elasticsearch/data --name=es1 -p 9200:9200 -p 9300:9300 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+docker exec es1 plugin -i elasticsearch/marvel/latest
+docker restart es1
+docker run -d -v /home/vagrant/es2:/usr/share/elasticsearch/data --name=es2 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+docker run -d -v /home/vagrant/es3:/usr/share/elasticsearch/data --name=es3 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
+```
+
+Sixth, prove to yourself your data wasn't lost.
+
+```
+curl 'http://localhost:9200/app/customer/_search?pretty=true' -d '
+{
+	"query": {
+		"match_all": { }
+	}
+}'
+```
 
 #Copyright Stuff
 Copyright 2015 Jee Vang
