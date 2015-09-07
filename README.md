@@ -47,7 +47,7 @@ docker run -d --name=es3 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=tes
 2. [View stats via Marvel](http://10.211.55.125:9200/_plugin/marvel)
 
 #Finally, try this
-Try creating an elasticsearch cluster with mounted points to persist data. First, create the locations where we will persist data.
+Try creating an elasticsearch cluster with mounted points to persist data. Assuming you've ssh'd into the VM, first, create the locations where we will persist data.
 
 ```
 mkdir /home/vagrant/es1
@@ -65,7 +65,7 @@ docker run -d -v /home/vagrant/es2:/usr/share/elasticsearch/data --name=es2 elas
 docker run -d -v /home/vagrant/es3:/usr/share/elasticsearch/data --name=es3 elasticsearch:1.5.2 elasticsearch -Des.cluster.name=test
 ```
 
-Third, add some data. Assuming you've ssh'd into the VM.
+Third, add some data.
 
 ```
 curl -XPUT 'http://localhost:9200/app' -d '
